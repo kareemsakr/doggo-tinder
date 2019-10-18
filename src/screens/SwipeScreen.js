@@ -152,17 +152,6 @@ export default class SwipeScreen extends Component {
       }
     ]);
 
-    // If transX has not yet been defined we stay in the center (value is 0).
-    // When transX is defined, it means drag has already occured. In such a case
-    // we want to snap to -100 if the final position of the block is below 0
-    // and to 100 otherwise.
-    // We also take into account gesture velocity at the moment of release. To
-    // do that we calculate final position of the block as if it was moving for
-    // TOSS_SEC seconds with a constant speed the block had when released (dragVX).
-    // So the formula for the final position is:
-    //   finalX = transX + TOSS_SEC * dragVelocityX
-    //
-
     this.init();
   }
   static defaultProps = {
@@ -240,19 +229,13 @@ export default class SwipeScreen extends Component {
 
   beforeSwiped = () => {
     console.log("setting current index");
-    this.setState({ currentIndex: 1 }, () =>
-      console.log("current index updated")
-    );
+    this.setState({ currentIndex: this.state.currentIndex + 1 }, () => {
+      console.log("current index updated");
+      this.init();
+    });
   };
   swipped = ([translationX]) => {
-    // console.log({ likes: translationX > 0 });
-    // const profiles =
-    //     this.setState({ profiles}, this.init);
     console.log("spring animation done ");
-    const {
-      profiles: [lastProfile, ...profiles]
-    } = this.state;
-    this.setState({ profiles }, this.init);
   };
   render() {
     console.log(this.state.currentIndex);
@@ -281,52 +264,47 @@ export default class SwipeScreen extends Component {
     const { onGestureEvent } = this;
     return (
       <View style={styles.container}>
-        {this.state.profiles
-          .map((d, i) => {
-            if (i == 0) {
-              return (
-                <PanGestureHandler
-                  key={d.name}
-                  {...{ onGestureEvent }}
-                  onHandlerStateChange={this.onGestureEvent}
-                >
+        <PanGestureHandler
+          {...{ onGestureEvent }}
+          onHandlerStateChange={onGestureEvent}
+        >
+          <Animated.View style={StyleSheet.absoluteFill}>
+            {this.state.profiles
+              .map((d, i) => {
+                if (i < this.state.currentIndex) {
+                  return null;
+                }
+                return (
                   <Animated.View
+                    key={d.name}
                     style={[
                       StyleSheet.absoluteFillObject,
-                      {
-                        transform: [
-                          { translateX: this.translateX },
-                          { translateY: this.translateY },
-                          { rotateZ }
-                        ]
-                      }
+                      i == this.state.currentIndex
+                        ? {
+                            transform: [
+                              { translateX: this.translateX },
+                              { translateY: this.translateY },
+                              { rotateZ }
+                            ]
+                          }
+                        : { transform: [{ scale: nextCardScale }] }
                     ]}
                   >
                     <Card
                       profile={d}
-                      likeOpacity={likeOpacity}
-                      nopeOpacity={nopeOpacity}
+                      likeOpacity={
+                        i == this.state.currentIndex ? likeOpacity : 0
+                      }
+                      nopeOpacity={
+                        i == this.state.currentIndex ? nopeOpacity : 0
+                      }
                     />
                   </Animated.View>
-                </PanGestureHandler>
-              );
-            } else {
-              return (
-                <Animated.View
-                  key={d.name}
-                  style={[
-                    StyleSheet.absoluteFillObject,
-                    {
-                      transform: [{ scale: nextCardScale }]
-                    }
-                  ]}
-                >
-                  <Card profile={d} likeOpacity={0} nopeOpacity={0} />
-                </Animated.View>
-              );
-            }
-          })
-          .reverse()}
+                );
+              })
+              .reverse()}
+          </Animated.View>
+        </PanGestureHandler>
       </View>
     );
   }

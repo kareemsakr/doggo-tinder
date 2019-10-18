@@ -152,17 +152,6 @@ export default class SwipeScreen extends Component {
       }
     ]);
 
-    // If transX has not yet been defined we stay in the center (value is 0).
-    // When transX is defined, it means drag has already occured. In such a case
-    // we want to snap to -100 if the final position of the block is below 0
-    // and to 100 otherwise.
-    // We also take into account gesture velocity at the moment of release. To
-    // do that we calculate final position of the block as if it was moving for
-    // TOSS_SEC seconds with a constant speed the block had when released (dragVX).
-    // So the formula for the final position is:
-    //   finalX = transX + TOSS_SEC * dragVelocityX
-    //
-
     this.init();
   }
   static defaultProps = {
@@ -246,14 +235,7 @@ export default class SwipeScreen extends Component {
     });
   };
   swipped = ([translationX]) => {
-    // console.log({ likes: translationX > 0 });
-    // const profiles =
-    //     this.setState({ profiles}, this.init);
     console.log("spring animation done ");
-    // const {
-    //   profiles: [lastProfile, ...profiles]
-    // } = this.state;
-    // this.setState({ profiles }, this.init);
   };
   render() {
     console.log(this.state.currentIndex);
