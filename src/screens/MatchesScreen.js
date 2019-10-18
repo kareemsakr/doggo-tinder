@@ -1,10 +1,44 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, View, FlatList } from "react-native";
+import { ListItem } from "react-native-elements";
 
-const MatchesScreen = ({ params }) => (
-  <View>
-    <Text>MatchesScreen</Text>
-  </View>
+const list = [
+  {
+    name: "Sad Doggo",
+    avatar_url:
+      "https://cdn.pixabay.com/photo/2018/03/31/06/31/dog-3277416_1280.jpg",
+    messages: [
+      { message: "Hello woof woof" },
+      { message: "Sniff sniff how's it going?" }
+    ]
+  },
+  {
+    name: "McCutness",
+    avatar_url:
+      "https://cdn.pixabay.com/photo/2017/09/25/13/12/dog-2785074_1280.jpg",
+    messages: [
+      { message: "Hello woof woof" },
+      { message: "Sniff sniff how's it going?" }
+    ]
+  }
+];
+
+keyExtractor = (item, index) => index.toString();
+
+renderItem = ({ item }) => (
+  <ListItem
+    title={item.name}
+    subtitle={item.subtitle}
+    leftAvatar={{ source: { uri: item.avatar_url } }}
+    bottomDivider
+    chevron
+  />
 );
+
+const MatchesScreen = ({ params }) => {
+  return (
+    <FlatList keyExtractor={keyExtractor} data={list} renderItem={renderItem} />
+  );
+};
 
 export default MatchesScreen;
