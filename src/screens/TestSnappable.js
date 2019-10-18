@@ -11,7 +11,7 @@ const rotatedWidth =
   SCREEN_WIDTH * Math.sin(toRadians(90 - 15)) +
   SCREEN_HEIGHT * Math.sin(toRadians(15));
 
-const { event } = Animated;
+const { event, Value, interpolate } = Animated;
 
 const dogStack = [
   {
@@ -67,7 +67,14 @@ const dogStack = [
 export default class SwipeScreen extends Component {
   constructor(props) {
     super(props);
-
+    this.translationX = new Value(0);
+    this.onGestureEvent = event([
+      {
+        nativeEvent: {
+          translationX: this.translationX
+        }
+      }
+    ]);
     this.state = {
       profiles: dogStack
     };
@@ -78,6 +85,11 @@ export default class SwipeScreen extends Component {
   };
 
   render() {
+    const nextCardScale = interpolate(this.translateX, {
+      inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
+      outputRange: [1, 0.8, 1],
+      extrapolate: "clamp"
+    });
     return (
       <View style={[StyleSheet.absoluteFill, styles.container]}>
         <FlatList
