@@ -12,6 +12,8 @@ import SwipeScreen from "./src/screens/SwipeScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import SettingsScreen from "./src/screens/SettingsScreen";
 import MatchesScreen from "./src/screens/MatchesScreen";
+//import ChatScreen from "./src/screens/ChatScreen";
+import ChatScreen from "./src/screens/ChatScreenGifted";
 
 SwipeScreen.navigationOptions = {
   tabBarIcon: ({ focused }) => <SwipeTabBarIcon focused={focused} />,
@@ -36,10 +38,12 @@ ProfileStackNavigator.navigationOptions = {
 
 MatchesScreen.navigationOptions = {
   title: "Matches",
-  headerTintColor: Colors.tintColor
+  headerTintColor: Colors.tintColor,
+  headerBackTitle: " "
 };
 const MatchesStackNavigator = createStackNavigator({
-  MatchesScreen
+  MatchesScreen,
+  ChatScreen
 });
 
 MatchesStackNavigator.navigationOptions = {

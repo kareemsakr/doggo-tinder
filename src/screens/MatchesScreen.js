@@ -23,19 +23,18 @@ const list = [
   }
 ];
 
-keyExtractor = (item, index) => index.toString();
-
-renderItem = ({ item }) => (
-  <ListItem
-    title={item.name}
-    subtitle={item.subtitle}
-    leftAvatar={{ source: { uri: item.avatar_url } }}
-    bottomDivider
-    chevron
-  />
-);
-
-const MatchesScreen = ({ params }) => {
+const MatchesScreen = ({ navigation }) => {
+  const { navigate } = navigation;
+  keyExtractor = (item, index) => index.toString();
+  renderItem = ({ item }) => (
+    <ListItem
+      title={item.name}
+      leftAvatar={{ source: { uri: item.avatar_url } }}
+      bottomDivider
+      chevron
+      onPress={() => navigate("ChatScreen", item)}
+    />
+  );
   return (
     <FlatList keyExtractor={keyExtractor} data={list} renderItem={renderItem} />
   );
