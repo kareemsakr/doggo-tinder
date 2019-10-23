@@ -1,19 +1,23 @@
 import React from "react";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import { createStackNavigator } from "react-navigation-stack";
-import { createAppContainer } from "react-navigation";
-import SwipeTabBarIcon from "./src/components/SwipeTabBarIcon";
-import ProfileTabBarIcon from "./src/components/ProfileTabBarIcon";
-import MatchesTabBarIcon from "./src/components/MatchesTabBarIcon";
+import { createAppContainer, createSwitchNavigator } from "react-navigation";
+import { setNavigator } from "./src/navigationRef";
 
 import Colors from "./src/constants/colors";
 
+import SwipeTabBarIcon from "./src/components/SwipeTabBarIcon";
+import ProfileTabBarIcon from "./src/components/ProfileTabBarIcon";
+import MatchesTabBarIcon from "./src/components/MatchesTabBarIcon";
 import SwipeScreen from "./src/screens/SwipeScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import SettingsScreen from "./src/screens/SettingsScreen";
 import MatchesScreen from "./src/screens/MatchesScreen";
 //import ChatScreen from "./src/screens/ChatScreen";
 import ChatScreen from "./src/screens/ChatScreenGifted";
+import LoginScreen from "./src/screens/LoginScreen";
+import SignupScreen from "./src/screens/SignUpScreen";
+// import ResolveAuthScreen from "./src/screens/resolveAuthScreen";
 
 SwipeScreen.navigationOptions = {
   tabBarIcon: ({ focused }) => <SwipeTabBarIcon focused={focused} />,
@@ -65,4 +69,25 @@ const tabNavigator = createBottomTabNavigator(
   }
 );
 
-export default createAppContainer(tabNavigator);
+SignupScreen.navigationOptions = {
+  header: null
+};
+
+LoginScreen.navigationOptions = {
+  header: null
+};
+
+const switchNavigator = createSwitchNavigator({
+  // ResolveAuthScreen,
+  LoginFlow: createStackNavigator({
+    Login: LoginScreen,
+    Signup: SignupScreen
+  }),
+  mainFlow: tabNavigator
+});
+
+const App = createAppContainer(switchNavigator);
+
+export default () => {
+  return <App ref={navigator => setNavigator(navigator)} />;
+};
