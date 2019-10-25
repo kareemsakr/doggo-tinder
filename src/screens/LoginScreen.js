@@ -5,7 +5,8 @@ import firebaseSDK from "../services/Firebase";
 import AuthForm from "../components/authForm";
 
 export default function Login({ navigation }) {
-  const [error, SetError] = useState("");
+  firebaseSDK.au;
+  const [error, setError] = useState("");
   const login = async ({ email, password }) => {
     const user = {
       email,
@@ -15,16 +16,16 @@ export default function Login({ navigation }) {
   };
 
   const loginSuccess = () => {
-    navigation.navigate("mainFlow");
+    //navigation.navigate("mainFlow");
   };
 
   const loginFailed = res => {
-    SetError(res.message);
+    setError(res.message);
   };
 
   return (
     <View style={styles.container}>
-      <NavigationEvents onWillBlur={() => SetError("")} />
+      <NavigationEvents onWillBlur={() => setError("")} />
       <AuthForm
         onSubmit={login}
         formTitle="Login"

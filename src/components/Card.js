@@ -7,7 +7,11 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 const componentName = ({ profile, likeOpacity, nopeOpacity }) => (
   <View style={styles.card}>
-    <Image style={styles.image} source={profile.pic} resizeMode="cover" />
+    <Image
+      style={styles.image}
+      source={{ uri: profile.profile_picture }}
+      resizeMode="cover"
+    />
     <View style={styles.overlay}>
       <View style={styles.header}>
         <Animated.View style={[styles.like, { opacity: likeOpacity }]}>

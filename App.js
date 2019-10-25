@@ -11,13 +11,14 @@ import ProfileTabBarIcon from "./src/components/ProfileTabBarIcon";
 import MatchesTabBarIcon from "./src/components/MatchesTabBarIcon";
 import SwipeScreen from "./src/screens/SwipeScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
+import UpdateProfileScreen from "./src/screens/UpdateProfileScreen";
 import SettingsScreen from "./src/screens/SettingsScreen";
 import MatchesScreen from "./src/screens/MatchesScreen";
 //import ChatScreen from "./src/screens/ChatScreen";
 import ChatScreen from "./src/screens/ChatScreenGifted";
 import LoginScreen from "./src/screens/LoginScreen";
 import SignupScreen from "./src/screens/SignUpScreen";
-// import ResolveAuthScreen from "./src/screens/resolveAuthScreen";
+import ResolveAuthScreen from "./src/screens/ResolveAuthScreen";
 
 SwipeScreen.navigationOptions = {
   tabBarIcon: ({ focused }) => <SwipeTabBarIcon focused={focused} />,
@@ -29,7 +30,8 @@ SwipeScreen.navigationOptions = {
 
 const ProfileStackNavigator = createStackNavigator({
   ProfileScreen,
-  SettingsScreen
+  SettingsScreen,
+  UpdateProfileScreen
 });
 
 ProfileStackNavigator.navigationOptions = {
@@ -78,7 +80,7 @@ LoginScreen.navigationOptions = {
 };
 
 const switchNavigator = createSwitchNavigator({
-  // ResolveAuthScreen,
+  ResolveAuthScreen,
   LoginFlow: createStackNavigator({
     Login: LoginScreen,
     Signup: SignupScreen

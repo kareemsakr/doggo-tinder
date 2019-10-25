@@ -4,6 +4,8 @@ import { PanGestureHandler, State } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
 import Card from "../components/Card";
 
+import FirebaseSDK from "../services/Firebase";
+
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const toRadians = angle => angle * (Math.PI / 180);
@@ -37,57 +39,6 @@ const {
   greaterThan,
   or
 } = Animated;
-
-const dogStack = [
-  {
-    name: "Sammy",
-    age: 3,
-    bio: "",
-    pic: require("../../assets/dog1.jpeg")
-  },
-  {
-    name: "Rover",
-    age: 4,
-    bio: "",
-    pic: require("../../assets/dog2.jpeg")
-  },
-  {
-    name: "Prince",
-    age: 3,
-    bio: "",
-    pic: require("../../assets/dog3.jpeg")
-  },
-  {
-    name: "Edgar",
-    age: 3,
-    bio: "",
-    pic: require("../../assets/dog4.jpeg")
-  },
-  {
-    name: "Maya",
-    age: 3,
-    bio: "",
-    pic: require("../../assets/dog5.jpeg")
-  },
-  {
-    name: "King",
-    age: 3,
-    bio: "",
-    pic: require("../../assets/dog6.jpeg")
-  },
-  {
-    name: "Doge",
-    age: 3,
-    bio: "",
-    pic: require("../../assets/dog7.jpeg")
-  },
-  {
-    name: "Doggo",
-    age: 3,
-    bio: "",
-    pic: require("../../assets/dog8.jpeg")
-  }
-];
 
 function runSpring(clock, value, velocity, dest) {
   const state = {
@@ -126,7 +77,7 @@ export default class SwipeScreen extends Component {
     super(props);
 
     this.state = {
-      profiles: dogStack,
+      profiles: [],
       currentIndex: 0
     };
 
@@ -214,9 +165,10 @@ export default class SwipeScreen extends Component {
           runSpring(clockX, this.dragX, this.dragVY + this.dragVX, snapPoint)
         ),
         set(this.prevDragX, this.dragX),
-        cond(and(eq(clockRunning(clockX), 0), neq(this.dragX, 0)), [
-          call([this.dragX], this.swipped)
-        ]),
+        ,
+        // cond(and(eq(clockRunning(clockX), 0), neq(this.dragX, 0)), [
+        //   call([this.dragX], this.swipped)
+        // ])
         this.dragX
       ],
       cond(
@@ -227,18 +179,35 @@ export default class SwipeScreen extends Component {
     );
   }
 
-  beforeSwiped = () => {
-    console.log("setting current index");
+  beforeSwiped = ([translateX]) => {
+    if (translateX > 0) {
+      //console.log("liked ", this.state.profiles[this.state.currentIndex].id);
+      FirebaseSDK.addLike(this.state.profiles[this.state.currentIndex].id);
+    }
     this.setState({ currentIndex: this.state.currentIndex + 1 }, () => {
-      console.log("current index updated");
       this.init();
     });
   };
-  swipped = ([translationX]) => {
-    console.log("spring animation done ");
-  };
+
+  async componentDidMount() {
+    FirebaseSDK.getProfilesForSwiping(async snapshot => {
+      const profile = await FirebaseSDK.getUserProfileOnce();
+      let res = [];
+      console.log("data updates");
+      snapshot.forEach(function(childSnapshot) {
+        if (
+          childSnapshot.val().id !== profile.id &&
+          !(childSnapshot.val().id in (profile.likes || {}))
+        ) {
+          res = [...res, childSnapshot.val()];
+        }
+      });
+      this.setState({ profiles: res });
+    });
+  }
+  componentWillUnmount() {}
   render() {
-    console.log(this.state.currentIndex);
+    // console.log(this.state.profiles);
     const rotateZ = concat(
       interpolate(this.translateX, {
         inputRange: [-SCREEN_WIDTH / 2, SCREEN_WIDTH / 2],
@@ -276,7 +245,7 @@ export default class SwipeScreen extends Component {
                 }
                 return (
                   <Animated.View
-                    key={d.name}
+                    key={d.id}
                     style={[
                       StyleSheet.absoluteFillObject,
                       i == this.state.currentIndex

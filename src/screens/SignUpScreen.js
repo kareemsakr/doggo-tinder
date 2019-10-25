@@ -1,20 +1,32 @@
-import React, { useContext } from "react";
+import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { NavigationEvents } from "react-navigation";
-//import { Context as AuthContext } from "../context/AuthContext";
 import AuthForm from "../components/authForm";
+import FirebaseSDK from "../services/Firebase";
 
 export default function SignUp({ navigation }) {
-  //const { state, signUp, clearErrorMessage } = useContext(AuthContext);
+  const [error, setError] = useState("");
+  const signUp = async user => {
+    FirebaseSDK.signUp(user, success, failed);
+  };
+
+  const success = () => {
+    navigation.navigate("UpdateProfileScreen");
+  };
+
+  const failed = res => {
+    setError(res.message);
+  };
+
   return (
     <View style={styles.container}>
-      {/* <NavigationEvents onWillBlur={clearErrorMessage} /> */}
+      <NavigationEvents onWillBlur={() => setError("")} />
       <AuthForm
-        // onSubmit={signUp}
+        onSubmit={signUp}
         formTitle="Sign Up"
         navigateTo="Login"
         linkTitle="Login Instead ?"
-        // errorMessage={state.errorMessage}
+        errorMessage={error}
       />
     </View>
   );
