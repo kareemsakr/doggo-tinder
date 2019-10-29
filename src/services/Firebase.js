@@ -77,26 +77,7 @@ class FirebaseSDK {
         secretKey: AWS_SECRET_KEY,
         successActionStatus: 201
       };
-
       RNS3.put(file, options).progress(e => console.log(e.loaded / e.total));
-      // RNS3.put(file, options).then(response => {
-
-      //   if (response.status !== 201)
-      //     throw new Error("Failed to upload image to S3");
-      //   //console.log(response);
-      //   /**
-      //    * {
-      //    *   postResponse: {
-      //    *     bucket: "your-bucket",
-      //    *     etag : "9f620878e06d28774406017480a59fd4",
-      //    *     key: "uploads/image.png",
-      //    *     location: "https://your-bucket.s3.amazonaws.com/uploads%2Fimage.png"
-      //    *   }
-      //    * }
-      //    */
-      // });
-      //console.log(response);
-      //return response.body.postResponse.location;
     } catch (err) {
       console.log("uploadImage try/catch error: " + err.message);
     }
@@ -109,6 +90,20 @@ class FirebaseSDK {
         .database()
         .ref("users/" + userRef.uid)
         .on("value", cb);
+    }
+  };
+
+  setUserProfile = () => {
+    var userRef = firebase.auth().currentUser;
+    if (userRef != null) {
+      firebase
+        .database()
+        .ref("users/" + userRef.uid)
+        .on("value", snapshot => {
+          const profile = snapshot.val();
+          this.loggedInUserProfile = profile;
+          console.log(profile);
+        });
     }
   };
 
@@ -125,6 +120,9 @@ class FirebaseSDK {
 
   getLoggedInUserId = () => {
     return firebase.auth().currentUser.uid;
+  };
+  getLoggedInUserOnce = () => {
+    return firebase.auth().currentUser;
   };
 
   getProfilesForSwiping = cb => {
@@ -148,25 +146,86 @@ class FirebaseSDK {
 
   addLike = async id => {
     var userRef = firebase.auth().currentUser;
-
     if (userRef) {
-      if (await this.doesLike(id)) {
-        console.log("match");
-      }
-
       firebase
         .database()
-        .ref("users/" + userRef.uid)
-        .once("value")
-        .then(function(snapshot) {
-          firebase
-            .database()
-            .ref("users/" + userRef.uid)
-            .update({ likes: { ...snapshot.val().likes, [id]: true } });
-        });
+        .ref("users/" + userRef.uid + "/likes")
+        .update({ [id]: true });
+
+      if (await this.doesLike(id)) {
+        console.log("match");
+        // add match to user reference
+        firebase
+          .database()
+          .ref("users/" + userRef.uid + "/matches")
+          .update({ [id]: true });
+
+        firebase
+          .database()
+          .ref("users/" + id + "/matches")
+          .update({ [userRef.uid]: true });
+
+        // add a match reference to store the chat
+        firebase
+          .database()
+          .ref("matches/" + this.getCombinedId(this.getLoggedInUserId(), id))
+          .push({
+            _id: uuid.v4(),
+            text: "We Matched woof woof.",
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            system: true
+          });
+      }
     }
+    // var userRef = firebase.auth().currentUser;
+    // if (userRef) {
+    //   firebase
+    //     .database()
+    //     .ref("users/" + userRef.uid)
+    //     .once("value")
+    //     .then(async snapshot => {
+    //       firebase
+    //         .database()
+    //         .ref("users/" + userRef.uid)
+    //         .update({ likes: { ...snapshot.val().likes, [id]: true } });
+
+    //       if (await this.doesLike(id)) {
+    //         console.log("match");
+    //         // add match to user reference
+    //         const x = snapshot.val().matches || {};
+    //         firebase
+    //           .database()
+    //           .ref("users/" + userRef.uid)
+    //           .update({ matches: { ...x, [id]: true } });
+
+    //         firebase
+    //           .database()
+    //           .ref("users/" + id + "/matches")
+    //           .update({ [userRef.uid]: true });
+
+    //         // add a match reference to store the chat
+    //         firebase
+    //           .database()
+    //           .ref(
+    //             "matches/" + this.getCombinedId(this.getLoggedInUserId(), id)
+    //           )
+    //           .push({
+    //             text: "We Matched woof woof.",
+    //             timestamp: firebase.database.ServerValue.TIMESTAMP,
+    //             system: true
+    //           });
+    //       }
+    //     });
+    // }
   };
 
+  getCombinedId = (uid1, uid2) => {
+    if (uid1 < uid2) {
+      return uid1 + uid2;
+    } else {
+      return uid2 + uid1;
+    }
+  };
   updateUserProfile = async (userProf, success_callback, failed_callback) => {
     let storageURL = "";
     if (userProf.imageURL) {
@@ -204,7 +263,94 @@ class FirebaseSDK {
         .catch(failed_callback);
     }
   };
+
+  getMatches = async cb => {
+    var userRef = firebase.auth().currentUser;
+    if (userRef != null) {
+      firebase
+        .database()
+        .ref("users/" + userRef.uid)
+        .on("value", async snapshot => {
+          let matchIds = Object.keys(snapshot.val().matches || {});
+          let result = [];
+          for (let index = 0; index < matchIds.length; index++) {
+            const key = matchIds[index];
+            const match = await firebase
+              .database()
+              .ref("users/" + key)
+              .once("value");
+            result.push(match.val());
+          }
+          cb(result);
+        });
+    }
+  };
+
+  getChatMessages = cb => {
+    firebase
+      .database()
+      .ref(
+        "matches/" +
+          firebaseSDK.getCombinedId(
+            this.getLoggedInUserId(),
+            this.getRecipientId
+          )
+      )
+      .limitToLast(20)
+      .on("child_added", snapshot => cb(this.parse(snapshot)));
+  };
+
+  parse = snapshot => {
+    const { timestamp: numberStamp, text, user } = snapshot.val();
+    const { key: _id } = snapshot;
+    const timestamp = new Date(numberStamp);
+    const message = { _id, timestamp, text, user };
+    return message;
+  };
+
+  sendMessage = messages => {
+    const matchRef = firebase
+      .database()
+      .ref(
+        "matches/" +
+          firebaseSDK.getCombinedId(
+            this.getLoggedInUserId(),
+            this.getRecipientId
+          )
+      );
+
+    for (let i = 0; i < messages.length; i++) {
+      const { text, user } = messages[i];
+      console.log("adding message", user);
+      const message = {
+        text,
+        user,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+      };
+      matchRef.push(message);
+    }
+  };
+  chatRefOff = () => {
+    firebase
+      .database()
+      .ref(
+        "matches/" +
+          firebaseSDK.getCombinedId(
+            this.getLoggedInUserId(),
+            this.getRecipientId
+          )
+      )
+      .off("child_added");
+  };
+
+  setRecipient(id) {
+    this.recipientId = id;
+  }
+  get getRecipientId() {
+    return this.recipientId;
+  }
 }
+
 const firebaseSDK = new FirebaseSDK();
 
 export default firebaseSDK;

@@ -190,6 +190,7 @@ export default class SwipeScreen extends Component {
   };
 
   async componentDidMount() {
+    FirebaseSDK.setUserProfile();
     FirebaseSDK.getProfilesForSwiping(async snapshot => {
       const profile = await FirebaseSDK.getUserProfileOnce();
       let res = [];
