@@ -1,15 +1,18 @@
 import React from "react";
 import { Text, View, StyleSheet, Image, Dimensions } from "react-native";
 import Animated from "react-native-reanimated";
+import ProgressiveImage from "./ProgressiveImage";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 const componentName = ({ profile, likeOpacity, nopeOpacity }) => (
   <View style={styles.card}>
-    <Image
+    <ProgressiveImage
       style={styles.image}
+      containerStyle={styles.imageContainer}
       source={{ uri: profile.profile_picture }}
+      thumbnailSource={require("../../assets/loadingdog.png")}
       resizeMode="cover"
     />
     <View style={styles.overlay}>
@@ -30,15 +33,18 @@ const componentName = ({ profile, likeOpacity, nopeOpacity }) => (
 
 const styles = StyleSheet.create({
   card: {
-    ...StyleSheet.absoluteFillObject,
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT - 100
   },
+  imageContainer: {
+    flex: 1,
+    marginHorizontal: 12,
+    borderRadius: 20
+  },
   image: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
     width: null,
     height: null,
-    marginHorizontal: 12,
     borderRadius: 20
   },
   header: {
@@ -54,13 +60,11 @@ const styles = StyleSheet.create({
     fontSize: 32
   },
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     justifyContent: "space-between",
     padding: 16
   },
   like: {
-    // borderWidth: 4,
-    // borderRadius: 5,
     padding: 8,
     borderColor: "#6ee3b4",
     transform: [{ rotate: "330deg" }]
@@ -71,8 +75,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   nope: {
-    // borderWidth: 4,
-    // borderRadius: 5,
     padding: 8,
     borderColor: "#ec5288",
     transform: [{ rotate: "30deg" }]

@@ -177,46 +177,6 @@ class FirebaseSDK {
           });
       }
     }
-    // var userRef = firebase.auth().currentUser;
-    // if (userRef) {
-    //   firebase
-    //     .database()
-    //     .ref("users/" + userRef.uid)
-    //     .once("value")
-    //     .then(async snapshot => {
-    //       firebase
-    //         .database()
-    //         .ref("users/" + userRef.uid)
-    //         .update({ likes: { ...snapshot.val().likes, [id]: true } });
-
-    //       if (await this.doesLike(id)) {
-    //         console.log("match");
-    //         // add match to user reference
-    //         const x = snapshot.val().matches || {};
-    //         firebase
-    //           .database()
-    //           .ref("users/" + userRef.uid)
-    //           .update({ matches: { ...x, [id]: true } });
-
-    //         firebase
-    //           .database()
-    //           .ref("users/" + id + "/matches")
-    //           .update({ [userRef.uid]: true });
-
-    //         // add a match reference to store the chat
-    //         firebase
-    //           .database()
-    //           .ref(
-    //             "matches/" + this.getCombinedId(this.getLoggedInUserId(), id)
-    //           )
-    //           .push({
-    //             text: "We Matched woof woof.",
-    //             timestamp: firebase.database.ServerValue.TIMESTAMP,
-    //             system: true
-    //           });
-    //       }
-    //     });
-    // }
   };
 
   getCombinedId = (uid1, uid2) => {
@@ -229,7 +189,6 @@ class FirebaseSDK {
   updateUserProfile = async (userProf, success_callback, failed_callback) => {
     let storageURL = "";
     if (userProf.imageURL) {
-      //storageURL = await this.uploadImage(userProf.imageURL);
       const file = {
         uri: userProf.imageURL,
         name: uuid.v4() + ".png",
