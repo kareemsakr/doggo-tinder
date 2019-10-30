@@ -145,7 +145,7 @@ class FirebaseSDK {
     return this.getLoggedInUserId() in (snapshot.val().likes || {});
   };
 
-  addLike = async id => {
+  addLike = async (id, matchCallBack) => {
     var userRef = firebase.auth().currentUser;
     if (userRef) {
       firebase
@@ -154,7 +154,6 @@ class FirebaseSDK {
         .update({ [id]: true });
 
       if (await this.doesLike(id)) {
-        console.log("match");
         // add match to user reference
         firebase
           .database()
@@ -176,6 +175,8 @@ class FirebaseSDK {
             timestamp: firebase.database.ServerValue.TIMESTAMP,
             system: true
           });
+
+        matchCallBack();
       }
     }
   };

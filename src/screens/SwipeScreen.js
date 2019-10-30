@@ -1,7 +1,16 @@
 import React, { Component } from "react";
-import { StyleSheet, View, Image, Text, Dimensions } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Button,
+  Text,
+  Dimensions,
+  TouchableOpacity
+} from "react-native";
 import { PanGestureHandler, State } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
+import Modal from "react-native-modal";
+import { Ionicons } from "@expo/vector-icons";
 import Card from "../components/Card";
 
 import FirebaseSDK from "../services/Firebase";
@@ -78,7 +87,8 @@ export default class SwipeScreen extends Component {
 
     this.state = {
       profiles: [],
-      currentIndex: 0
+      currentIndex: 0,
+      matchModalVisible: false
     };
 
     const TOSS_SEC = 0.2;
@@ -182,22 +192,25 @@ export default class SwipeScreen extends Component {
     );
   }
 
+  onMatch = () => {};
+
   beforeSwiped = ([translateX]) => {
     if (translateX > 0) {
       //console.log("liked ", this.state.profiles[this.state.currentIndex].id);
-      FirebaseSDK.addLike(this.state.profiles[this.state.currentIndex].id);
+      FirebaseSDK.addLike(this.state.profiles[this.state.currentIndex].id, () =>
+        this.setState({ matchModalVisible: true })
+      );
     }
     this.setState({ currentIndex: this.state.currentIndex + 1 }, () => {
       this.init();
     });
   };
 
-  async componentDidMount() {
-    FirebaseSDK.setUserProfile();
+  getProfilesForSwiping = () => {
     FirebaseSDK.getProfilesForSwiping(async snapshot => {
       const profile = await FirebaseSDK.getUserProfileOnce();
       let res = [];
-      console.log("data updates");
+      console.log(snapshot.val());
       snapshot.forEach(function(childSnapshot) {
         if (
           childSnapshot.val().id !== profile.id &&
@@ -206,8 +219,14 @@ export default class SwipeScreen extends Component {
           res = [...res, childSnapshot.val()];
         }
       });
-      this.setState({ profiles: res });
+
+      this.setState({ profiles: res, currentIndex: 0 });
     });
+  };
+
+  async componentDidMount() {
+    FirebaseSDK.setUserProfile();
+    this.getProfilesForSwiping();
   }
   componentWillUnmount() {}
   render() {
@@ -237,11 +256,40 @@ export default class SwipeScreen extends Component {
     const { onGestureEvent } = this;
     return (
       <View style={styles.container}>
+        <Modal
+          isVisible={this.state.matchModalVisible}
+          animationIn={"slideInUp"}
+          animationOut={"slideOutDown"}
+        >
+          <View style={styles.modalContent}>
+            <Text>Congrats you've matched with a user!</Text>
+            <Button
+              title="Go to matches"
+              onPress={() => {
+                this.setState({ matchModalVisible: false });
+                this.props.navigation.navigate("Matches");
+              }}
+            />
+            <Button
+              title="Keep swiping"
+              onPress={() => this.setState({ matchModalVisible: false })}
+            />
+          </View>
+        </Modal>
+
         <PanGestureHandler
           {...{ onGestureEvent }}
           onHandlerStateChange={onGestureEvent}
         >
-          <Animated.View style={StyleSheet.absoluteFill}>
+          <Animated.View
+            style={[StyleSheet.absoluteFill, { justifyContent: "center" }]}
+          >
+            <Ionicons
+              name="md-refresh"
+              size={32}
+              style={{ alignSelf: "center" }}
+              onPress={this.getProfilesForSwiping}
+            />
             {this.state.profiles
               .map((d, i) => {
                 if (i < this.state.currentIndex) {
@@ -265,8 +313,12 @@ export default class SwipeScreen extends Component {
                   >
                     <Card
                       profile={d}
-                      likeOpacity={likeOpacity}
-                      nopeOpacity={nopeOpacity}
+                      likeOpacity={
+                        i == this.state.currentIndex ? likeOpacity : 0
+                      }
+                      nopeOpacity={
+                        i == this.state.currentIndex ? nopeOpacity : 0
+                      }
                     />
                   </Animated.View>
                 );
@@ -282,6 +334,16 @@ export default class SwipeScreen extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 40
+    marginTop: 40,
+    justifyContent: "center"
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 4,
+    borderColor: "rgba(0, 0, 0, 0.1)",
+    marginBottom: 250
   }
 });
