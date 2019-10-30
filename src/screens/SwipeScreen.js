@@ -61,7 +61,7 @@ function runSpring(clock, value, velocity, dest) {
   return [
     cond(clockRunning(clock), 0, [
       set(state.finished, 0),
-      set(state.velocity, velocity),
+      set(state.velocity, new Value(1)),
       set(state.position, value),
       set(config.toValue, dest),
       startClock(clock)
@@ -91,17 +91,20 @@ export default class SwipeScreen extends Component {
     this.prevDragX = new Value(0);
     this.prevDragY = new Value(0);
 
-    this.onGestureEvent = event([
-      {
-        nativeEvent: {
-          translationX: this.dragX,
-          velocityX: this.dragVX,
-          translationY: this.dragY,
-          velocityY: this.dragVY,
-          state: this.gestureState
+    this.onGestureEvent = event(
+      [
+        {
+          nativeEvent: {
+            translationX: this.dragX,
+            velocityX: this.dragVX,
+            translationY: this.dragY,
+            velocityY: this.dragVY,
+            state: this.gestureState
+          }
         }
-      }
-    ]);
+      ],
+      { useNativeDriver: true }
+    );
 
     this.init();
   }
@@ -130,13 +133,12 @@ export default class SwipeScreen extends Component {
       -rotatedWidth,
       cond(greaterThan(finalTranslateX, translationThreshold), rotatedWidth, 0)
     );
-
     this.translateY = cond(
       eq(this.gestureState, State.END),
       [
         set(
           this.dragY,
-          runSpring(clockY, this.dragY, this.dragVY + this.dragVX, 0)
+          runSpring(clockY, this.dragY, add(this.dragVX, this.dragVY), 0)
         ),
         set(this.prevDragY, this.dragY),
         this.dragY
@@ -162,13 +164,14 @@ export default class SwipeScreen extends Component {
         ),
         set(
           this.dragX,
-          runSpring(clockX, this.dragX, this.dragVY + this.dragVX, snapPoint)
+          runSpring(
+            clockX,
+            this.dragX,
+            add(this.dragVX, this.dragVY),
+            snapPoint
+          )
         ),
         set(this.prevDragX, this.dragX),
-        ,
-        // cond(and(eq(clockRunning(clockX), 0), neq(this.dragX, 0)), [
-        //   call([this.dragX], this.swipped)
-        // ])
         this.dragX
       ],
       cond(
@@ -209,7 +212,7 @@ export default class SwipeScreen extends Component {
   componentWillUnmount() {}
   render() {
     // console.log(this.state.profiles);
-    const rotateZ = concat(
+    const rotate = concat(
       interpolate(this.translateX, {
         inputRange: [-SCREEN_WIDTH / 2, SCREEN_WIDTH / 2],
         outputRange: [15, -15],
@@ -254,7 +257,7 @@ export default class SwipeScreen extends Component {
                             transform: [
                               { translateX: this.translateX },
                               { translateY: this.translateY },
-                              { rotateZ }
+                              { rotate }
                             ]
                           }
                         : { transform: [{ scale: nextCardScale }] }
@@ -262,12 +265,8 @@ export default class SwipeScreen extends Component {
                   >
                     <Card
                       profile={d}
-                      likeOpacity={
-                        i == this.state.currentIndex ? likeOpacity : 0
-                      }
-                      nopeOpacity={
-                        i == this.state.currentIndex ? nopeOpacity : 0
-                      }
+                      likeOpacity={likeOpacity}
+                      nopeOpacity={nopeOpacity}
                     />
                   </Animated.View>
                 );

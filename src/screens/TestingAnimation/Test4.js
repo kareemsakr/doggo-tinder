@@ -283,8 +283,8 @@ export default class SwipeScreen extends Component {
                         ? {
                             transform: [
                               { translateX: this.translateX },
-                              { translateY: this.translateY },
-                              { rotateZ }
+                              { translateY: this.translateY }
+                              // { rotateZ }
                             ]
                           }
                         : { transform: [{ scale: nextCardScale }] }

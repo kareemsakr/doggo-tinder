@@ -181,8 +181,8 @@ export default class SwipableCard extends Component {
             {
               transform: [
                 { translateX: this.translateX },
-                { translateY: this.translateY },
-                { rotateZ }
+                { translateY: this.translateY }
+                // { rotateZ }
               ]
             }
           ]}

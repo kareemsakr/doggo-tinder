@@ -15,6 +15,7 @@ import {
 
 class FirebaseSDK {
   constructor() {
+    console.disableYellowBox = true;
     if (!firebase.apps.length) {
       //avoid re-initializing
       firebase.initializeApp({
