@@ -26,6 +26,7 @@
     "ios": {
       "supportsTablet": true
     },
-    "description": ""
+    "description": "A tinder like app for dog owners to set up play dates for their dogs and simply connect with other dog owners in their area.",
+    "githubUrl": "https://github.com/kareemsakr/doggo-tinder"
   }
 }

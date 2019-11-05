@@ -26,6 +26,13 @@ const componentName = ({ profile, likeOpacity, nopeOpacity }) => (
       </View>
       <View style={styles.footer}>
         <Text style={styles.name}>{profile.name}</Text>
+        <ProgressiveImage
+          style={styles.ownerImage}
+          containerStyle={styles.ownerImageContainer}
+          source={{ uri: profile.owner_picture }}
+          thumbnailSource={require("../../assets/loadingdog.png")}
+          resizeMode="cover"
+        />
       </View>
     </View>
   </View>
@@ -47,17 +54,34 @@ const styles = StyleSheet.create({
     height: null,
     borderRadius: 20
   },
+  ownerImageContainer: {
+    marginHorizontal: 12,
+    height: 100,
+    width: 100,
+    borderTopLeftRadius: 250,
+    borderTopRightRadius: 250,
+    borderBottomLeftRadius: 250,
+    borderBottomRightRadius: 250,
+    overflow: "hidden"
+  },
+  ownerImage: {
+    flex: 1,
+    width: null,
+    height: null
+  },
   header: {
     margin: 10,
     flexDirection: "row",
     justifyContent: "space-between"
   },
   footer: {
-    flexDirection: "row"
+    flexDirection: "row",
+    justifyContent: "space-between"
   },
   name: {
     color: "white",
-    fontSize: 32
+    fontSize: 32,
+    alignSelf: "center"
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,

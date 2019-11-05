@@ -27,9 +27,16 @@ const UpdateProfileScreen = ({ navigation }) => {
       "https://doggo-tinder-photos.s3.ca-central-1.amazonaws.com/uploads/loadingdog.png"
     )
   );
-
+  const [ownerImageURL, setOwnerImageURL] = useState(
+    navigation.getParam(
+      "ownerImageURL",
+      "https://doggo-tinder-photos.s3.ca-central-1.amazonaws.com/uploads/loadingdog.png"
+    )
+  );
+  console.log(navigation.getParam("ownerImageURL"));
   this.name = name;
   this.imageURL = imageURL;
+  this.ownerImageURL = ownerImageURL;
   this.bio = bio;
 
   _pickImage = async () => {
@@ -45,21 +52,47 @@ const UpdateProfileScreen = ({ navigation }) => {
     }
   };
 
+  _pickOwnerImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [1, 1]
+    });
+
+    if (!result.cancelled) {
+      console.log(result);
+      setOwnerImageURL(result.uri);
+    }
+  };
+
   useEffect(() => {
     getPermissionAsync();
   }, []);
   return (
     <View style={styles.container}>
-      <Avatar
-        rounded
-        size="xlarge"
-        source={{
-          uri: imageURL
-        }}
-        showEditButton
-        onEditPress={_pickImage}
-        containerStyle={styles.avatar}
-      />
+      <View style={{ flexDirection: "row", justifyContent: "space-evenly" }}>
+        <Avatar
+          rounded
+          size="xlarge"
+          source={{
+            uri: imageURL
+          }}
+          showEditButton
+          onEditPress={_pickImage}
+          containerStyle={styles.avatar}
+        />
+        <Avatar
+          rounded
+          size="xlarge"
+          source={{
+            uri: ownerImageURL
+          }}
+          showEditButton
+          onEditPress={_pickOwnerImage}
+          containerStyle={styles.avatar}
+        />
+      </View>
+
       <Spacer>
         <Input placeholder="Name..." value={name} onChangeText={setName} />
       </Spacer>
@@ -102,6 +135,7 @@ UpdateProfileScreen.navigationOptions = ({ navigation }) => {
           FirebaseSDK.updateUserProfile({
             name: this.name,
             imageURL: this.imageURL,
+            ownerImageURL: this.ownerImageURL,
             bio: this.bio
           });
           navigation.navigate("ProfileScreen");

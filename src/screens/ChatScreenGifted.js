@@ -1,4 +1,5 @@
 import React from "react";
+import { KeyboardAvoidingView } from "react-native";
 import { GiftedChat } from "react-native-gifted-chat"; // 0.3.0
 import firebaseSDK from "../services/Firebase";
 

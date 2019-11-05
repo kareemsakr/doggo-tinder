@@ -48,6 +48,7 @@ class FirebaseSDK {
             bio: "",
             profile_picture:
               "https://doggo-tinder-photos.s3.ca-central-1.amazonaws.com/uploads/loadingdog.png",
+            owner_picture: "",
             id: resp.user.uid,
             likes: {}
           });
@@ -189,7 +190,7 @@ class FirebaseSDK {
     }
   };
   updateUserProfile = async (userProf, success_callback, failed_callback) => {
-    let storageURL = "";
+    let profileStorageURL = "";
     if (userProf.imageURL) {
       const file = {
         uri: userProf.imageURL,
@@ -206,7 +207,27 @@ class FirebaseSDK {
       };
 
       const response = await RNS3.put(file, options);
-      storageURL = response.body.postResponse.location;
+      profileStorageURL = response.body.postResponse.location;
+    }
+
+    let ownerStorageURL = "";
+    if (userProf.ownerImageURL) {
+      console.log("setting owner image");
+      const file = {
+        uri: userProf.ownerImageURL,
+        name: uuid.v4() + ".png",
+        type: "image/png"
+      };
+      const options = {
+        keyPrefix: "uploads/",
+        bucket: "doggo-tinder-photos",
+        region: "ca-central-1",
+        accessKey: AWS_ACCESS_KEY,
+        secretKey: AWS_SECRET_KEY,
+        successActionStatus: 201
+      };
+      const response = await RNS3.put(file, options);
+      ownerStorageURL = response.body.postResponse.location;
     }
 
     var userRef = firebase.auth().currentUser;
@@ -214,10 +235,11 @@ class FirebaseSDK {
       firebase
         .database()
         .ref("users/" + userRef.uid)
-        .set({
+        .update({
           name: userProf.name,
           bio: userProf.bio,
-          profile_picture: storageURL,
+          profile_picture: profileStorageURL,
+          owner_picture: ownerStorageURL,
           id: userRef.uid
         })
         .then(success_callback)
